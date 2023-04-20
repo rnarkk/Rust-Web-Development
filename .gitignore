@@ -2,3 +2,8 @@
 **/.DS_STORE
 **/.vscode
 **/.env
+
+
+# Added by cargo
+
+/target

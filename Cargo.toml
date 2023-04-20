@@ -1,0 +1,16 @@
+[workspace]
+members = [
+    "ch_01/minimal-tcp",
+    "ch_01/minimal-warp",
+    "ch_02",
+    "ch_03",
+    "ch_04/final",
+    "ch_05",
+    "ch_06",
+    "ch_07",
+    "ch_08",
+    "ch_08/handle-errors",
+    "ch_09",
+    "ch_10",
+    "ch_11",
+]
