@@ -1,14 +1,24 @@
-use std::collections::HashMap;
-use warp::http::StatusCode;
+use std::{
+    collections::HashMap,
+    sync::Arc
+};
+use axum::{
+    extractor::State,
+    http::StatusCode,
+    response::Response
+};
 
-use crate::store::Store;
-use crate::types::pagination::extract_pagination;
-use crate::types::question::{Question, QuestionId};
+use crate::{
+    store::Store,
+    types::{
+        pagination::extract_pagination,
+        question::{Question, QuestionId}
+};
 use handle_errors::Error;
 
 pub async fn get_questions(
     params: HashMap<String, String>,
-    store: Store,
+    store: State<Arc<Store>>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     if !params.is_empty() {
         let pagination = extract_pagination(params)?;
