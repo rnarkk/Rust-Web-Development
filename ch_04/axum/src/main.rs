@@ -102,35 +102,16 @@ async fn handle_error(r: Rejection) -> Result<impl Reply, Rejection> {
     }
 }
 
-fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination, Error> {
-    if params.contains_key("start") && params.contains_key("end") {
-        return Ok(Pagination {
-            start: params
-                .get("start")
-                .unwrap()
-                .parse::<usize>()
-                .map_err(Error::ParseError)?,
-            end: params
-                .get("end")
-                .unwrap()
-                .parse::<usize>()
-                .map_err(Error::ParseError)?,
-        });
-    }
-
-    Err(Error::MissingParameters)
-}
-
 async fn get_questions(pagination: Query<Option<Pagination>>, store: Store)
     -> (StatusCode, Json<Vec<Question>>)
 {
     if let Some(pagination) = pagination.0 {
         let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
-        let res = &res[pagination.start..pagination.end];
-        Ok(Json(&res))
+        let res = res[pagination.start..pagination.end];
+        Ok(Json(res))
     } else {
         let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
-        Ok(Json(&res))
+        Ok(Json(res))
     }
 }
 
