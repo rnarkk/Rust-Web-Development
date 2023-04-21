@@ -116,32 +116,32 @@ async fn get_questions(pagination: Query<Option<Pagination>>, store: Store)
 }
 
 async fn add_question(
-    store: Store,
+    State(store): State<Arc<Store>>,
     Json(question): Json<Question>,
-) -> (StatusCode, String) {
+) -> impl IntoResponse {
     store
         .questions
         .write()
         .await
         .insert(question.id.clone(), question);
-
     (StatusCode::OK, "Question added".to_owned())
 }
 
 async fn update_question(
     Path(id): Path<String>,
-    store: Store,
+    State(store): State<Arc<Store>>,
     Json(question): Json<Question>,
-) -> Result<impl warp::Reply, Error> {
+) -> impl IntoResponse {
     match store.questions.write().await.get_mut(&QuestionId(id)) {
         Some(q) => *q = question,
-        None => return Err(Error::QuestionNotFound),
+        None => return (
+            Error::QuestionNotFound)
+        )
     }
-
     Ok((StatusCode::OK, "Question updated"))
 }
 
-async fn delete_question(Path(id): Path<String>, store: Store) -> Result<> {
+async fn delete_question(Path(id): Path<String>, State(store): State<Arc<Store>>) -> impl IntoResponse {
     match store.questions.write().await.remove(&QuestionId(id)) {
         Some(_) => return Ok((StatusCode::OK, "Question deleted")),
         None => return Err(Error::QuestionNotFound),
@@ -155,29 +155,25 @@ struct AddAnswer {
 }
 
 async fn add_answer(
-    store: Store,
+    State(store): State<Arc<Store>>,
     Form(params): Form<AddAnswer>,
-) -> Result<> {
+) -> impl IntoResponse {
     let answer = Answer {
         id: AnswerId("1".to_owned()),
         content: params.content,
         question_id: QuestionId(params.question_id),
     };
-
     store
         .answers
         .write()
         .await
         .insert(answer.id.clone(), answer);
-
-    Ok((StatusCode::OK, "Answer added"))
+   (StatusCode::OK, "Answer added")
 }
 
 #[tokio::main]
 async fn main() {
-    let store = Store::new();
-    let store_filter = warp::any().map(move || store.clone());
-
+    let store = Arc::new(Store::new());
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_headers(["content-type"])
@@ -186,8 +182,9 @@ async fn main() {
         .route("/questions", get(get_questions))
         .route("/questions/:id", put(update_question).delete(delete_question).post(add_question))
         .route("/comments", post(add_answer))
+        .with_state(store)
         .layer(cors);
-
+ 
     Server::bind(&"127.0.0.1:3030".parse().unwrap())
         .serve(app.into_make_service())
         .await
