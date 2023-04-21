@@ -5,14 +5,12 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use warp::{
-    Filter, 
-    http::Method, 
-    filters::{
-        cors::CorsForbidden,
-    }, 
-    reject::Reject, 
-    Rejection, 
-    Reply, 
+    Filter,
+    http::Method,
+    filters::cors::CorsForbidden,
+    reject::Reject,
+    Rejection,
+    Reply,
     http::StatusCode
 };
 
@@ -36,7 +34,7 @@ impl Store {
 
     fn add_question(mut self, question: Question) -> Self {
         self.questions.insert(question.id.clone(), question);
-        self        
+        self
     }
 }
 
@@ -72,7 +70,6 @@ impl FromStr for QuestionId {
         }
     }
 }
-    
 
 #[derive(Debug)]
 struct InvalidId;
@@ -84,18 +81,18 @@ async fn get_questions() -> Result<impl warp::Reply, warp::Rejection> {
         "First Question".to_string(),
         "Content of question".to_string(),
         Some(vec!("faq".to_string())),
-    );        
-        
-        match question.id.0.parse::<i32>() {
-            Err(_) =>  {
-                Err(warp::reject::custom(InvalidId))
-            },
-            Ok(_) => {
-                Ok(warp::reply::json(
-                    &question
-                ))
-            }
+    );
+
+    match question.id.0.parse::<i32>() {
+        Err(_) =>  {
+            Err(warp::reject::custom(InvalidId))
+        },
+        Ok(_) => {
+            Ok(warp::reply::json(
+                &question
+            ))
         }
+    }
 }
 
 async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
