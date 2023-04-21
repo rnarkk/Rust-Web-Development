@@ -1,5 +1,9 @@
 #![warn(clippy::all)]
 
+mod routes;
+mod store;
+mod types;
+
 use std::sync::Arc;
 use axum::{
     Router, Server,
@@ -7,10 +11,6 @@ use axum::{
 };
 use http::{Method, header::CONTENT_TYPE};
 use tower_http::cors::{Any, CorsLayer};
-
-mod routes;
-mod store;
-mod types;
 
 use routes::{
     question::{get_questions, update_question, delete_question, add_question},
@@ -31,7 +31,6 @@ async fn main() {
         .route("/comments", post(add_answer))
         .with_state(store)
         .layer(cors);
-
     Server::bind(&"127.0.0.1:3030".parse().unwrap())
         .serve(app.into_make_service())
         .await

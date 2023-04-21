@@ -44,7 +44,7 @@ pub async fn update_question(
 
 pub async fn delete_question(
     Path(id): Path<String>,
-    State(store): State<Arc<Store>>,
+    State(store): State<Arc<Store>>
 ) -> impl IntoResponse {
     match store.questions.write().await.remove(&QuestionId(id)) {
         Some(_) => (),
@@ -58,7 +58,7 @@ pub async fn delete_question(
 
 pub async fn add_question(
     State(store): State<Arc<Store>>,
-    Json(question): Json<Question>,
+    Json(question): Json<Question>
 ) -> impl IntoResponse {
     store
         .questions

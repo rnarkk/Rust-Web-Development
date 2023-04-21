@@ -13,9 +13,8 @@ use crate::{
     }
 };
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AddAnswer {
-    // pub id: AnswerId,
     pub content: String,
     pub question_id: String,
 }
