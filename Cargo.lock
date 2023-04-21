@@ -171,6 +171,7 @@ checksum = "113713495a32dd0ab52baf5c10044725aa3aec00b31beda84218e469029b72a3"
 dependencies = [
  "async-trait",
  "axum-core",
+ "axum-macros",
  "bitflags",
  "bytes",
  "futures-util",
@@ -210,6 +211,18 @@ dependencies = [
  "rustversion",
  "tower-layer",
  "tower-service",
+]
+
+[[package]]
+name = "axum-macros"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2bb524613be645939e280b7279f7b017f98cf7f5ef084ec374df373530e73277"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.15",
 ]
 
 [[package]]
@@ -383,12 +396,13 @@ dependencies = [
 name = "ch_05-axum"
 version = "0.1.0"
 dependencies = [
+ "axum",
  "handle-errors-05-axum",
+ "http",
  "serde",
  "serde_json",
  "tokio",
  "tower-http",
- "warp",
 ]
 
 [[package]]
@@ -406,6 +420,23 @@ dependencies = [
  "tracing-subscriber 0.3.16",
  "uuid",
  "warp",
+]
+
+[[package]]
+name = "ch_06-axum"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "env_logger",
+ "handle-errors-06-axum",
+ "log",
+ "log4rs",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber 0.3.16",
+ "uuid",
 ]
 
 [[package]]
@@ -1177,6 +1208,13 @@ name = "handle-errors-06"
 version = "0.1.0"
 dependencies = [
  "warp",
+]
+
+[[package]]
+name = "handle-errors-06-axum"
+version = "0.1.0"
+dependencies = [
+ "axum",
 ]
 
 [[package]]
