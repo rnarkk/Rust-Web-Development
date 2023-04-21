@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use warp::{
     filters::{body::BodyDeserializeError, cors::CorsForbidden},
     http::StatusCode,
@@ -13,7 +14,7 @@ pub enum Error {
     DatabaseQueryError,
 }
 
-impl std::fmt::Display for Error {
+impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match &*self {
             Error::ParseError(ref err) => write!(f, "Cannot parse parameter: {}", err),
@@ -50,7 +51,7 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
         Ok(warp::reply::with_status(
             error.to_string(),
             StatusCode::UNPROCESSABLE_ENTITY,
-        )) 
+        ))
     } else {
         event!(Level::WARN, "Requested route was not found");
         Ok(warp::reply::with_status(
