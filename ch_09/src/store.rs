@@ -89,11 +89,11 @@ impl Store {
             .bind(new_question.tags)
             .bind(account_id.0)
             .map(|row: PgRow| Question {
-			    id: QuestionId(row.get("id")),
+                id: QuestionId(row.get("id")),
                 title: row.get("title"),
-			    content: row.get("content"),
+                content: row.get("content"),
                 tags: row.get("tags"),
-		    })
+            })
             .fetch_one(&self.connection)
             .await {
                 Ok(question) => Ok(question),
