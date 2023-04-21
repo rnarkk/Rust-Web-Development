@@ -16,4 +16,4 @@ log4rs = "1"
 uuid = { version = "1", features = ["v4"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-subscriber = "0.3"
-sqlx = { version = "0.7.0-alpha.2", features = [ "runtime-tokio", "tls-rustls", "migrate", "postgres" ] }
+sqlx = { version = "0.7.0-alpha.2", features = ["runtime-tokio", "tls-rustls", "migrate", "postgres"] }
