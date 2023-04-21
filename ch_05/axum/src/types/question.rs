@@ -5,7 +5,7 @@ pub struct Question {
     pub id: QuestionId,
     pub title: String,
     pub content: String,
-    pub tags: Option<Vec<String>>,
+    pub tags: Vec<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
