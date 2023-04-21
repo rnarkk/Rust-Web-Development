@@ -13,7 +13,7 @@ tokio = { version = "1", features = ["full"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-subscriber = "0.2"
 sqlx = { version = "0.7.0-alpha.2", features = ["runtime-tokio", "tls-rustls", "migrate", "postgres"] }
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.11", default-features = false, features = ["rustls-tls", "json"] }
 reqwest-middleware = "0.2"
 reqwest-retry = "0.2"
 rand = "0.8"
@@ -23,7 +23,6 @@ chrono = "0.4"
 dotenv = "0.15"
 clap = { version = "4", features = ["derive"] }
 proc-macro2 = "1"
-openssl = { version = "0.10", features = ["vendored"] }
 
 [build-dependencies]
-platforms = "2.0.0"
+platforms = "3"
