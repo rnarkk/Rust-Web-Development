@@ -1,13 +1,12 @@
-use std::str::FromStr;
-use std::io::{Error, ErrorKind};
+use std::{
+    io::{Error, ErrorKind},
+    str::FromStr
+};
 use warp::{
-    Filter,
-    http::Method,
+    Filter, Rejection, Reply,
     filters::cors::CorsForbidden,
-    reject::Reject,
-    Rejection,
-    Reply,
-    http::StatusCode
+    http::{Method, StatusCode},
+    reject::Reject
 };
 use serde::Serialize;
 
@@ -18,6 +17,7 @@ struct Question {
     content: String,
     tags: Option<Vec<String>>,
 }
+
 #[derive(Debug, Serialize)]
 struct QuestionId(String);
 
