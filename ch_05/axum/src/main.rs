@@ -1,5 +1,6 @@
 #![warn(clippy::all)]
 
+use std::sync::Arc;
 use axum::{
     Router, Server,
     routing::{get, post, put}
@@ -15,11 +16,11 @@ use routes::{
     question::{get_questions, update_question, delete_question, add_question},
     answer::add_answer
 };
+use store::Store;
 
 #[tokio::main]
 async fn main() {
-    let store = store::Store::new();
-    let store_filter = warp::any().map(move || store.clone());
+    let store = Arc::new(Store::new());
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -29,7 +30,8 @@ async fn main() {
         .route("/questions", get(get_questions))
         .route("/questions/:id", put(update_question).delete(delete_question).post(add_question))
         .route("/comments", post(add_answer))
-        .layer(cors);
+        .layer(cors)
+        .with_state(store);
 
     Server::bind(&"127.0.0.1:3030".parse().unwrap())
         .serve(app.into_make_service())
