@@ -1,13 +1,10 @@
-use std::{
-    collections::HashMap,
-    sync::Arc
-};
+use std::sync::Arc;
 use axum::{
-    extract::State,
+    extract::{Form, State},
     http::StatusCode,
     response::IntoResponse
 };
-
+use serde::{Deserialize, Serialize};
 use crate::{
     store::Store,
     types::{
@@ -16,15 +13,22 @@ use crate::{
     }
 };
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AddAnswer {
+    // pub id: AnswerId,
+    pub content: String,
+    pub question_id: String,
+}
+
 pub async fn add_answer(
-    params: HashMap<String, String>,
-    State(store): State<Arc<Store>>
+    State(store): State<Arc<Store>>,
+    Form(params): Form<AddAnswer>,
 ) -> impl IntoResponse {
     let answer = Answer {
         id: AnswerId("1".to_string()),
-        content: params.get("content").unwrap().to_string(),
-        question_id: QuestionId(params.get("questionId").unwrap().to_string()),
+        content: params.content,
+        question_id: QuestionId(params.question_id.into()),
     };
     store.answers.write().await.insert(answer.id.clone(), answer);
-    Ok(warp::reply::with_status("Answer added", StatusCode::OK))
+    (StatusCode::OK, "Answer added")
 }

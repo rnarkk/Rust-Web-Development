@@ -1,70 +1,69 @@
-use std::{
-    collections::HashMap,
-    sync::Arc
-};
+use std::sync::Arc;
 use axum::{
-    extractor::State,
+    Form,
+    extract::{Json, Path, State},
     http::StatusCode,
-    response::Response
+    response::IntoResponse
 };
-
 use crate::{
     store::Store,
     types::{
-        pagination::extract_pagination,
+        pagination::Pagination,
         question::{Question, QuestionId}
+    }
 };
-use handle_errors::Error;
 
 pub async fn get_questions(
-    params: HashMap<String, String>,
-    store: State<Arc<Store>>,
-) -> Result<impl warp::Reply, warp::Rejection> {
-    if !params.is_empty() {
-        let pagination = extract_pagination(params)?;
+    State(store): State<Arc<Store>>,
+    params: Option<Form<Pagination>>
+) -> impl IntoResponse {
+    if let Some(params) = params {
         let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
-        let res = &res[pagination.start..pagination.end];
-        Ok(warp::reply::json(&res))
+        let res = res[params.0.start..params.0.end].to_vec();
+        Json(res)
     } else {
         let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
-        Ok(warp::reply::json(&res))
+        Json(res)
     }
 }
 
 pub async fn update_question(
-    id: String,
-    store: Store,
-    question: Question,
-) -> Result<impl warp::Reply, warp::Rejection> {
+    Path(id): Path<String>,
+    State(store): State<Arc<Store>>,
+    Json(question): Json<Question>,
+) -> impl IntoResponse {
     match store.questions.write().await.get_mut(&QuestionId(id)) {
         Some(q) => *q = question,
-        None => return Err(warp::reject::custom(Error::QuestionNotFound)),
+        None => return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "Question not found"
+        )
     }
-
-    Ok(warp::reply::with_status("Question updated", StatusCode::OK))
+    (StatusCode::OK, "Question updated")
 }
 
 pub async fn delete_question(
-    id: String,
-    store: Store,
-) -> Result<impl warp::Reply, warp::Rejection> {
+    Path(id): Path<String>,
+    State(store): State<Arc<Store>>,
+) -> impl IntoResponse {
     match store.questions.write().await.remove(&QuestionId(id)) {
         Some(_) => (),
-        None => return Err(warp::reject::custom(Error::QuestionNotFound)),
+        None => return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "Question not found"
+        )
     }
-
-    Ok(warp::reply::with_status("Question deleted", StatusCode::OK))
+    (StatusCode::OK, "Question deleted")
 }
 
 pub async fn add_question(
-    store: Store,
-    question: Question,
-) -> Result<impl warp::Reply, warp::Rejection> {
+    State(store): State<Arc<Store>>,
+    Json(question): Json<Question>,
+) -> impl IntoResponse {
     store
         .questions
         .write()
         .await
         .insert(question.clone().id, question);
-
-    Ok(warp::reply::with_status("Question added", StatusCode::OK))
+    (StatusCode::OK, "Question added")
 }

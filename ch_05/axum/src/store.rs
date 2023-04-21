@@ -1,7 +1,8 @@
+use std::{
+    collections::HashMap,
+    sync::Arc
+};
 use tokio::sync::RwLock;
-use std::collections::HashMap;
-use std::sync::Arc;
-
 use crate::types::{
     answer::{Answer, AnswerId},
     question::{Question, QuestionId},
@@ -15,7 +16,7 @@ pub struct Store {
 
 impl Store {
     pub fn new() -> Self {
-        Store {
+        Self {
             questions: Arc::new(RwLock::new(Self::init())),
             answers: Arc::new(RwLock::new(HashMap::new())),
         }

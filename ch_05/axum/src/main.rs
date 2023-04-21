@@ -5,8 +5,8 @@ use axum::{
     Router, Server,
     routing::{get, post, put}
 };
+use http::{Method, header::CONTENT_TYPE};
 use tower_http::cors::{Any, CorsLayer};
-use handle_errors::return_error;
 
 mod routes;
 mod store;
@@ -21,17 +21,16 @@ use store::Store;
 #[tokio::main]
 async fn main() {
     let store = Arc::new(Store::new());
-
     let cors = CorsLayer::new()
         .allow_origin(Any)
-        .allow_headers(["content-type"])
-        .allow_methods(["put", "delete", "get", "post"]);
+        .allow_headers([CONTENT_TYPE])
+        .allow_methods([Method::PUT, Method::DELETE, Method::GET, Method::POST]);
     let app = Router::new()
         .route("/questions", get(get_questions))
         .route("/questions/:id", put(update_question).delete(delete_question).post(add_question))
         .route("/comments", post(add_answer))
-        .layer(cors)
-        .with_state(store);
+        .with_state(store)
+        .layer(cors);
 
     Server::bind(&"127.0.0.1:3030".parse().unwrap())
         .serve(app.into_make_service())

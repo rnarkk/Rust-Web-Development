@@ -1,8 +1,8 @@
-use warp::{
-    filters::{body::BodyDeserializeError, cors::CorsForbidden},
+use std::fmt::Display;
+use axum::{
+    BoxError,
     http::StatusCode,
-    reject::Reject,
-    Rejection, Reply,
+    response::IntoResponse
 };
 
 #[derive(Debug)]
@@ -12,7 +12,7 @@ pub enum Error {
     QuestionNotFound,
 }
 
-impl std::fmt::Display for Error {
+impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
             Error::ParseError(ref err) => write!(f, "Cannot parse parameter: {}", err),
@@ -22,29 +22,17 @@ impl std::fmt::Display for Error {
     }
 }
 
-impl Reject for Error {}
+impl std::error::Error for Error {}
 
-pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
-    println!("{:?}", r);
-    if let Some(error) = r.find::<Error>() {
-        Ok(warp::reply::with_status(
-            error.to_string(),
-            StatusCode::UNPROCESSABLE_ENTITY,
-        ))
-    } else if let Some(error) = r.find::<CorsForbidden>() {
-        Ok(warp::reply::with_status(
-            error.to_string(),
-            StatusCode::FORBIDDEN,
-        ))
-    } else if let Some(error) = r.find::<BodyDeserializeError>() {
-        Ok(warp::reply::with_status(
-            error.to_string(),
-            StatusCode::UNPROCESSABLE_ENTITY,
-        ))
+pub async fn return_error(err: BoxError) -> impl IntoResponse {
+    println!("{:?}", err);
+    if err.is::<Error>() {
+        (StatusCode::UNPROCESSABLE_ENTITY, err.to_string())
+    // } else if let Some(error) = err.is::<CorsForbidden>() {
+    //     (StatusCode::FORBIDDEN, error.to_owned())
+    // } else if let Some(error) = err.is::<BodyDeserializeError>() {
+    //     (StatusCode::UNPROCESSABLE_ENTITY, error.to_owned())
     } else {
-        Ok(warp::reply::with_status(
-            "Route not found".to_string(),
-            StatusCode::NOT_FOUND,
-        ))
+        (StatusCode::NOT_FOUND, "Route not found".to_owned())
     }
 }
