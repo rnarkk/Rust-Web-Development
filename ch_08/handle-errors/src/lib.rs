@@ -98,7 +98,7 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
         Ok(warp::reply::with_status(
             error.to_string(),
             StatusCode::UNPROCESSABLE_ENTITY,
-        )) 
+        ))
     } else {
         event!(Level::WARN, "Requested route was not found");
         Ok(warp::reply::with_status(
