@@ -1,5 +1,8 @@
 [workspace]
 members = [
+    "ch_01/hello",
+    "ch_01/minimal-axum",
+    "ch_01/minimal-reqwest",
     "ch_01/minimal-tcp",
     "ch_01/minimal-warp",
     "ch_02",
@@ -9,7 +12,6 @@ members = [
     "ch_06",
     "ch_07",
     "ch_08",
-    "ch_08/handle-errors",
     "ch_09",
     "ch_10",
     "ch_11",
