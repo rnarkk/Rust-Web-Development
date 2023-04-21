@@ -21,7 +21,7 @@ pub struct Pagination {
 /// # Example usage
 /// ```rust
 /// use std::collections::HashMap;
-///
+/// 
 /// let mut query = HashMap::new();
 /// query.insert("limit".to_string(), "1".to_string());
 /// query.insert("offset".to_string(), "10".to_string());
