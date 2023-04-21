@@ -21,11 +21,11 @@ pub async fn add_answer(
 
     let answer = Answer {
         content,
-        question_id: params.get("questionId").unwrap().parse().unwrap(),
+        question_id: params.get("question_id").unwrap().parse().unwrap(),
     };
 
     match store.add_answer(answer, account_id).await {
-        Ok(_) => Ok(warp::reply::with_status("Answer added", StatusCode::OK)),
-        Err(e) => Err(warp::reject::custom(e)),
+        Ok(_) => (StatusCode::OK, "Answer added"),
+        Err(e) => (StatusCode::UNPROCESSABLE_ENTITY, e),
     }
 }
