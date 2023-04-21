@@ -56,16 +56,16 @@ pub async fn check_profanity(content: String) -> Result<String, handle_errors::E
         } else {
             let err = transform_error(res).await;
             return Err(handle_errors::Error::ServerError(err));
-        } 
+        }
     }
-    
+
     match res.json::<BadWordsResponse>()
         .await {
             Ok(res) => Ok(res.censored_content),
             Err(e) => Err(handle_errors::Error::ReqwestAPIError(e)),
-        }  
+        }
 }
-    
+
 async fn transform_error(res: reqwest::Response) -> handle_errors::APILayerError {
     handle_errors::APILayerError {
         status: res.status().as_u16(),

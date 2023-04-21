@@ -92,7 +92,7 @@ async fn main() -> Result<(), handle_errors::Error> {
             std::process::exit(1);
         }
     }
-    
+
     print!("Running post_question...");
     match std::panic::AssertUnwindSafe(post_question(token)).catch_unwind().await {
         Ok(_) => println!("✓"),

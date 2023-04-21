@@ -1,9 +1,9 @@
-use serde_json::json;
+use std::collections::HashMap;
 use std::net::SocketAddr;
+use bytes::Bytes;
+use serde_json::json;
 use tokio::sync::{oneshot, oneshot::Sender};
 use warp::{http, Filter, Reply};
-use bytes::Bytes;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct MockServer {
@@ -26,7 +26,7 @@ impl MockServer {
         content: Bytes,
     ) -> Result<impl warp::Reply, warp::Rejection> {
         let content = String::from_utf8(content.to_vec()).expect("Invalid UTF-8");
-        if content.contains("shitty") {            
+        if content.contains("shitty") {
             Ok(warp::reply::with_status(
                 warp::reply::json(&json!({
                     "bad_words_list": [
