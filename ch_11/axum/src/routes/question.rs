@@ -1,8 +1,11 @@
-use std::collections::HashMap;
-
+use std::{
+    collections::HashMap,
+    sync::Arc
+};
 use axum::{
+    extract::Path,
     http::StatusCode,
-    response::Json,
+    response::{IntoResponse, Json}
 };
 use tracing::{event, instrument, Level};
 
@@ -15,7 +18,7 @@ use crate::types::question::{NewQuestion, Question};
 #[instrument]
 pub async fn get_questions(
     Query(pagination): Query<Option<Pagination>>,
-    store: Store,
+    State(store): State<Arc<Store>>,
 ) -> Result<Json<Vec<Question>>> {
     event!(target: "practical_rust_book", Level::INFO, "querying questions");
     let Pagination { limit, offset } = match pagination.0 {
@@ -33,11 +36,11 @@ pub async fn get_questions(
 }
 
 pub async fn update_question(
-    id: i32,
+    Path(id): Path<i32>,
     session: Session,
-    store: Store,
-    question: Question,
-) -> Result<impl warp::Reply, warp::Rejection> {
+    State(store): State<Arc<Store>>,
+    Json(question): Json<Question>,
+) -> impl IntoResponse {
     let account_id = session.account_id;
     if store.is_question_owner(id, &account_id).await? {
         let title = check_profanity(question.title);
@@ -67,10 +70,10 @@ pub async fn update_question(
 }
 
 pub async fn delete_question(
-    id: i32,
+    Path(id): Path<i32>,
     session: Session,
-    store: Store,
-) -> Result<impl warp::Reply, warp::Rejection> {
+    State(store): State<Arc<Store>>,
+) -> impl IntoResponse {
     let account_id = session.account_id;
     if store.is_question_owner(id, &account_id).await? {
         match store.delete_question(id, account_id).await {
@@ -87,9 +90,9 @@ pub async fn delete_question(
 
 pub async fn add_question(
     session: Session,
-    store: Store,
-    new_question: NewQuestion,
-) -> Result<impl warp::Reply, warp::Rejection> {
+    State(store): State<Arc<Store>>,
+    Json(new_question): Json<NewQuestion>,
+) -> impl IntoResponse {
     let account_id = session.account_id;
     let title = match check_profanity(new_question.title).await {
         Ok(res) => res,

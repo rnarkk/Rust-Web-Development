@@ -1,7 +1,8 @@
 use std::{env, future};
 use argon2::{self, Config};
 use axum::{
-    response::Json,
+    extract::State,
+    response::{IntoResponse, Json},
 };
 use chrono::prelude::*;
 use rand::Rng;
@@ -9,7 +10,9 @@ use rand::Rng;
 use crate::store::Store;
 use crate::types::account::{Account, AccountId, Session};
 
-pub async fn register(store: Store, account: Account) -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn register(State(store): State<Arc<Store>>, Json(account): Json<Account>)
+    -> impl IntoResponse
+{
     let hashed_password = hash_password(account.password.as_bytes());
 
     let account = Account {
@@ -24,7 +27,9 @@ pub async fn register(store: Store, account: Account) -> Result<impl warp::Reply
     }
 }
 
-pub async fn login(store: Store, login: Account) -> Result<impl warp::Reply, warp::Rejection> {
+pub async fn login(State(store): State<Arc<Store>>, Json(login): Json<Account>)
+    -> impl IntoResponse
+{
     match store.get_account(login.email).await {
         Ok(account) => match verify_password(&account.password, login.password.as_bytes()) {
             Ok(verified) => {

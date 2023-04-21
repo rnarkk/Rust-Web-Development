@@ -1,24 +1,34 @@
 #![warn(clippy::all)]
 
-pub use handle_errors;
-
-use axum::{http::Method, Filter, Reply};
-use tokio::sync::{oneshot, oneshot::Sender};
-use tracing_subscriber::fmt::format::FmtSpan;
-
 pub mod config;
 mod profanity;
 mod routes;
 mod store;
 pub mod types;
 
+pub use handle_errors;
+
+use std::{
+    net::SocketAddr,
+    sync::Arc
+};
+use axum::{http::Method, Filter, Reply};
+use tokio::sync::{oneshot, oneshot::Sender};
+use tracing_subscriber::fmt::format::FmtSpan;
+
+use config::Config;
+use routes::{
+    authentication::{login, register},
+    question::{get_questions, update_question, delete_question, add_question},
+    answer::add_answer
+};
+use store::Store;
+
 pub struct OneshotHandler {
     pub sender: Sender<i32>,
 }
 
-async fn build_routes(store: store::Store) -> impl Filter<Extract = impl Reply> + Clone {
-    let store_filter = warp::any().map(move || store.clone());
-
+async fn build_routes(store: Arc<Store>) -> impl Filter<Extract = impl Reply> + Clone {
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_headers(["content-type"])
@@ -28,19 +38,8 @@ async fn build_routes(store: store::Store) -> impl Filter<Extract = impl Reply> 
         .route("/questions", get(get_questions))
         .route("/questions/:id", put(update_question).delete(delete_question).post(add_question))
         .route("/comments", post(add_answer))
-        .layer(cors);
-
-    Server::bind(&"127.0.0.1:3030".parse().unwrap())
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
-
-    let get_questions = warp::get()
-        .and(warp::path("questions"))
-        .and(warp::path::end())
-        .and(warp::query())
-        .and(store_filter.clone())
-        .and_then(routes::question::get_questions);
+        .layer(cors)
+        .with_state(state);
 
     let update_question = warp::put()
         .and(warp::path("questions"))
@@ -101,8 +100,10 @@ async fn build_routes(store: store::Store) -> impl Filter<Extract = impl Reply> 
         .recover(handle_errors::return_error)
 }
 
-pub async fn setup_store(config: &config::Config) -> Result<store::Store, handle_errors::Error> {
-    let store = store::Store::new(&format!(
+pub async fn setup_store(config: &Config)
+    -> Result<Store, handle_errors::Error>
+{
+    let store = Store::new(&format!(
         "postgres://{}:{}@{}:{}/{}",
         config.db_user, config.db_password, config.db_host, config.db_port, config.db_name
     ))
@@ -130,16 +131,19 @@ pub async fn setup_store(config: &config::Config) -> Result<store::Store, handle
     Ok(store)
 }
 
-pub async fn run(config: config::Config, store: store::Store) {
+pub async fn run(config: Config, store: Store) {
     let routes = build_routes(store).await;
-    warp::serve(routes).run(([0, 0, 0, 0], config.port)).await;
+    Server::bind(&"0.0.0.1:{config.port}".parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }
 
-pub async fn oneshot(store: store::Store) -> OneshotHandler {
+pub async fn oneshot(store: Store) -> OneshotHandler {
     let routes = build_routes(store).await;
     let (tx, rx) = oneshot::channel::<i32>();
 
-    let socket: std::net::SocketAddr = "127.0.0.1:3030"
+    let socket: SocketAddr = "127.0.0.1:3030"
         .to_string()
         .parse()
         .expect("Not a valid address");

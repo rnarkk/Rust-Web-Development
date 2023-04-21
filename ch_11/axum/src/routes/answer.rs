@@ -1,5 +1,8 @@
-use axum::http::StatusCode;
 use std::collections::HashMap;
+use axum::{
+    http::StatusCode,
+    response::IntoResponse
+};
 
 use crate::profanity::check_profanity;
 use crate::store::Store;
@@ -7,9 +10,9 @@ use crate::types::{account::Session, answer::Answer};
 
 pub async fn add_answer(
     session: Session,
-    store: Store,
+    State(store): State<Arc<Store>>,
     params: HashMap<String, String>,
-) -> Result<impl warp::Reply, warp::Rejection> {
+) -> impl IntoResponse {
     let account_id = session.account_id;
     let content = match check_profanity(params.get("content").unwrap().to_string()).await {
         Ok(res) => res,
