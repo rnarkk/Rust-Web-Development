@@ -86,7 +86,6 @@ async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
     }
 }
 
-
 #[tokio::main]
 async fn main() {
     let cors = warp::cors()
