@@ -52,32 +52,33 @@ impl std::error::Error for Error {}
 
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
-        match &*self {
+        let res = match self {
             Self::DatabaseQueryError => {
                 event!(Level::ERROR, "Database query error");
                 (StatusCode::UNPROCESSABLE_ENTITY, self.to_string())
             }
             Self::ReqwestAPIError(err) => {
                 event!(Level::ERROR, "{}", err);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error".to_string())
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error".to_owned())
             }
             Self::MiddlewareReqwestAPIError(err) => {
                 event!(Level::ERROR, "{}", err);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error".to_string())
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error".to_owned())
             }
             Self::ClientError(err) => {
                 event!(Level::ERROR, "{}", err);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error".to_string())
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error".to_owned())
             }
             Self::ServerError(err) => {
                 event!(Level::ERROR, "{}", err);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error".to_string())
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error".to_owned())
             }
             err => {
                 event!(Level::ERROR, "{}", err);
-                (StatusCode::UNPROCESSABLE_ENTITY, error.to_string())
+                (StatusCode::UNPROCESSABLE_ENTITY, err.to_string())
             }
-        }
+        };
+        res.into_response()
     }
 }
 
@@ -85,8 +86,5 @@ impl IntoResponse for Error {
 #[instrument]
 pub async fn handle_error(err: BoxError) -> impl IntoResponse {
     event!(Level::WARN, "Requested route was not found");
-    Ok(warp::reply::with_status(
-        "Route not found".to_string(),
-        StatusCode::NOT_FOUND,
-    ))
+    (StatusCode::NOT_FOUND, "Route not found".to_owned())
 }

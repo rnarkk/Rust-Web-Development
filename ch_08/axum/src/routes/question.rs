@@ -1,12 +1,18 @@
-use std::collections::HashMap;
-
+use std::sync::Arc;
+use axum::{
+    extract::{Json, Path, Query, State},
+    response::IntoResponse
+};
 use tracing::{event, instrument, Level};
-use warp::http::StatusCode;
 
-use crate::profanity::check_profanity;
-use crate::store::Store;
-use crate::types::pagination::{extract_pagination, Pagination};
-use crate::types::question::{NewQuestion, Question};
+use crate::{
+    profanity::check_profanity,
+    store::Store,
+    types::{
+        pagination::Pagination,
+        question::{NewQuestion, Question}
+    }
+};
 
 #[axum::debug_handler]
 #[instrument]
@@ -33,8 +39,8 @@ pub async fn update_question(
     State(store): State<Arc<Store>>,
     Json(question): Json<Question>
 ) -> impl IntoResponse {
-    let title = check_profanity(question.title);
-    let content = check_profanity(question.content);
+    let title = check_profanity(question.title.clone());
+    let content = check_profanity(question.content.clone());
     let (title, content) = tokio::join!(title, content);
     if title.is_err() {
         return Err(title.unwrap_err());
