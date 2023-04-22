@@ -20,7 +20,7 @@ members = [
     "ch_08",
     "ch_08/axum",
     "ch_09",
-#    "ch_09/axum",
+    "ch_09/axum",
     "ch_10",
 #    "ch_10/axum",
     "ch_11",

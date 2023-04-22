@@ -551,6 +551,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "ch_09-axum"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "chrono",
+ "env_logger",
+ "handle-errors-09-axum",
+ "http",
+ "log",
+ "log4rs",
+ "paseto",
+ "rand",
+ "reqwest",
+ "reqwest-middleware",
+ "reqwest-retry",
+ "rust-argon2",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber 0.3.17",
+ "uuid",
+]
+
+[[package]]
 name = "ch_10"
 version = "1.0.0"
 dependencies = [
@@ -1281,6 +1308,18 @@ dependencies = [
  "sqlx",
  "tracing",
  "warp",
+]
+
+[[package]]
+name = "handle-errors-09-axum"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "reqwest",
+ "reqwest-middleware",
+ "rust-argon2",
+ "sqlx",
+ "tracing",
 ]
 
 [[package]]
