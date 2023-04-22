@@ -35,8 +35,8 @@ impl Store {
         offset: u32,
     ) -> Result<Vec<Question>, Error> {
         match sqlx::query("SELECT * from questions LIMIT $1 OFFSET $2")
-            .bind(limit)
-            .bind(offset)
+            .bind(limit.map(|l| l as i32))
+            .bind(offset as i32)
             .map(|row: PgRow| Question {
                 id: QuestionId(row.get("id")),
                 title: row.get("title"),
