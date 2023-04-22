@@ -10,6 +10,7 @@ use axum::{
     response::Json,
     routing::{get, post, put}
 };
+use http::{Method, header::CONTENT_TYPE};
 use serde::{Deserialize, Serialize};
 use tower_http::cors::{Any, CorsLayer};
 use tokio::sync::RwLock;
@@ -78,7 +79,7 @@ impl Display for Error {
     }
 }
 
-async fn handle_error(r: Rejection) -> Result<impl Reply, Rejection> {
+async fn handle_error(r: Rejection) -> impl IntoResponse {
     if let Some(error) = r.find::<Error>() {
         Ok(warp::reply::with_status(
             error.to_owned(),
@@ -102,9 +103,10 @@ async fn handle_error(r: Rejection) -> Result<impl Reply, Rejection> {
     }
 }
 
-async fn get_questions(pagination: Query<Option<Pagination>>, store: Store)
-    -> (StatusCode, Json<Vec<Question>>)
-{
+async fn get_questions(
+    pagination: Option<Query<Pagination>>,
+    State(store): State<Arc<Store>>,
+) -> impl IntoResponse {
     if let Some(pagination) = pagination.0 {
         let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
         let res = res[pagination.start..pagination.end];
@@ -141,7 +143,10 @@ async fn update_question(
     Ok((StatusCode::OK, "Question updated"))
 }
 
-async fn delete_question(Path(id): Path<String>, State(store): State<Arc<Store>>) -> impl IntoResponse {
+async fn delete_question(
+    Path(id): Path<String>,
+    State(store): State<Arc<Store>>
+) -> impl IntoResponse {
     match store.questions.write().await.remove(&QuestionId(id)) {
         Some(_) => return Ok((StatusCode::OK, "Question deleted")),
         None => return Err(Error::QuestionNotFound),
@@ -176,15 +181,15 @@ async fn main() {
     let store = Arc::new(Store::new());
     let cors = CorsLayer::new()
         .allow_origin(Any)
-        .allow_headers(["content-type"])
-        .allow_methods(["put", "delete", "get", "post"]);
+        .allow_headers([CONTENT_TYPE])
+        .allow_methods([Method::PUT, Method::DELETE, Method::GET, Method::POST]);
     let app = Router::new()
         .route("/questions", get(get_questions))
-        .route("/questions/:id", put(update_question).delete(delete_question).post(add_question))
+        .route("/questions/:id",
+               put(update_question).delete(delete_question).post(add_question))
         .route("/comments", post(add_answer))
         .with_state(store)
         .layer(cors);
- 
     Server::bind(&"127.0.0.1:3030".parse().unwrap())
         .serve(app.into_make_service())
         .await
