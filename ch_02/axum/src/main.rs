@@ -12,20 +12,17 @@ struct Question {
     id: QuestionId,
     title: String,
     content: String,
-    tags: Option<Vec<String>>,
+    tags: Vec<String>,
 }
 
 #[derive(Debug)]
 struct QuestionId(String);
 
 impl Question {
-    fn new(id: QuestionId, title: String, content: String, tags: Option<Vec<String>>) -> Self {
-        Question {
-            id,
-            title,
-            content,
-            tags,
-        }
+    fn new(id: QuestionId, title: String, content: String, tags: Vec<String>)
+        -> Self
+    {
+        Self { id, title, content, tags }
     }
 }
 
