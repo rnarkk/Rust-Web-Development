@@ -1,9 +1,8 @@
 use std::fmt::Display;
-use warp::{
-    filters::{body::BodyDeserializeError, cors::CorsForbidden},
+use axum::{
+    BoxError,
     http::StatusCode,
-    reject::Reject,
-    Rejection, Reply,
+    response::IntoResponse
 };
 use tracing::{event, Level, instrument};
 
@@ -24,39 +23,22 @@ impl Display for Error {
     }
 }
 
-impl Reject for Error {}
-
 #[instrument]
-pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
-    if let Some(crate::Error::DatabaseQueryError) = r.find() {
+pub async fn return_error(r: BoxError) -> impl IntoResponse {
+    if let Some(crate::Error::DatabaseQueryError) = r.is() {
         event!(Level::ERROR, "Database query error");
-        Ok(warp::reply::with_status(
-            crate::Error::DatabaseQueryError.to_string(),
-            StatusCode::UNPROCESSABLE_ENTITY,
-        ))
-    } else if let Some(error) = r.find::<CorsForbidden>() {
+        (StatusCode::UNPROCESSABLE_ENTITY, crate::Error::DatabaseQueryError.to_string())
+    } else if let Some(error) = r.is::<CorsForbidden>() {
         event!(Level::ERROR, "CORS forbidden error: {}", error);
-        Ok(warp::reply::with_status(
-            error.to_string(),
-            StatusCode::FORBIDDEN,
-        ))
-    } else if let Some(error) = r.find::<BodyDeserializeError>() {
+        (StatusCode::FORBIDDEN, error.to_string())
+    } else if let Some(error) = r.is::<BodyDeserializeError>() {
         event!(Level::ERROR, "Cannot deserizalize request body: {}", error);
-        Ok(warp::reply::with_status(
-            error.to_string(),
-            StatusCode::UNPROCESSABLE_ENTITY,
-        ))
-    } else if let Some(error) = r.find::<Error>() {
+        (StatusCode::UNPROCESSABLE_ENTITY, error.to_string())
+    } else if let Some(error) = r.is::<Error>() {
         event!(Level::ERROR, "{}", error);
-        Ok(warp::reply::with_status(
-            error.to_string(),
-            StatusCode::UNPROCESSABLE_ENTITY,
-        ))
+        (StatusCode::UNPROCESSABLE_ENTITY, error.to_string())
     } else {
         event!(Level::WARN, "Requested route was not found");
-        Ok(warp::reply::with_status(
-            "Route not found".to_string(),
-            StatusCode::NOT_FOUND,
-        ))
+        (StatusCode::NOT_FOUND, "Route not found".to_owned())
     }
 }

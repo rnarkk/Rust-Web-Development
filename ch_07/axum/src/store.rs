@@ -26,9 +26,7 @@ impl Store {
             Err(e) => panic!("Couldn't establish DB connection: {}", e),
         };
 
-        Store {
-            connection: db_pool,
-        }
+        Store { connection: db_pool }
     }
 
     pub async fn get_questions(
@@ -135,13 +133,14 @@ impl Store {
 
     pub async fn add_answer(
         &self,
-        new_answer: NewAnswer,
+        question_id: QuestionId,
+        content: String
     ) -> Result<Answer, Error> {
         match sqlx::query(
             "INSERT INTO answers (content, question_id) VALUES ($1, $2)",
         )
-        .bind(new_answer.content)
-        .bind(new_answer.question_id.0)
+        .bind(content)
+        .bind(question_id.0)
         .map(|row: PgRow| Answer {
             id: AnswerId(row.get("id")),
             content: row.get("content"),

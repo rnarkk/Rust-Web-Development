@@ -33,44 +33,10 @@ async fn main() {
         .with_span_events(FmtSpan::CLOSE)
         .init();
 
-    let cors = warp::cors()
-        .allow_any_origin()
-        .allow_header("content-type")
-        .allow_methods(&[
-            Method::PUT,
-            Method::DELETE,
-            Method::GET,
-            Method::POST,
-        ]);
-
-    let get_questions = warp::get()
-        .and(warp::path("questions"))
-        .and(warp::path::end())
-        .and(warp::query())
-        .and(store_filter.clone())
-        .and_then(routes::question::get_questions);
-
-    let update_question = warp::put()
-        .and(warp::path("questions"))
-        .and(warp::path::param::<i32>())
-        .and(warp::path::end())
-        .and(store_filter.clone())
-        .and(warp::body::json())
-        .and_then(routes::question::update_question);
-
-    let delete_question = warp::delete()
-        .and(warp::path("questions"))
-        .and(warp::path::param::<i32>())
-        .and(warp::path::end())
-        .and(store_filter.clone())
-        .and_then(routes::question::delete_question);
-
-    let add_question = warp::post()
-        .and(warp::path("questions"))
-        .and(warp::path::end())
-        .and(store_filter.clone())
-        .and(warp::body::json())
-        .and_then(routes::question::add_question);
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_headers([CONTENT_TYPE])
+        .allow_methods([Method::PUT, Method::DELETE, Method::GET, Method::POST]);
 
     let add_answer = warp::post()
         .and(warp::path("answers"))
@@ -88,5 +54,16 @@ async fn main() {
         .with(warp::trace::request())
         .recover(return_error);
 
-    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
+    let app = Router::new()
+        .route("/questions", get(get_questions))
+        .route("/questions/:id",
+               put(update_question).delete(delete_question).post(add_question))
+        .route("/comments", post(add_answer))
+        .with_state(store)
+        .layer(cors)
+        .layer(TraceLayer::new_for_http());
+    Server::bind(&"127.0.0.1:3030".parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }

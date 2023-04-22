@@ -1,16 +1,13 @@
-use warp::http::StatusCode;
+use axum::response::IntoResponse;
 
-use crate::store::Store;
-use crate::types::answer::NewAnswer;
+use crate::{store::Store, types::answer::NewAnswer};
 
 pub async fn add_answer(
-    store: Store,
-    new_answer: NewAnswer,
-) -> Result<impl warp::Reply, warp::Rejection> {
-    match store.add_answer(new_answer).await {
-        Ok(_) => {
-            Ok(warp::reply::with_status("Answer added", StatusCode::OK))
-        }
-        Err(e) => Err(warp::reject::custom(e)),
+    State(store): State<Arc<Store>>,
+    Form(AddAnswer{ question_id, content }): Form<AddAnswer>,
+) -> impl IntoResponse {
+    match store.add_answer(question_id, content).await {
+        Ok(_) => Ok((StatusCode::OK, "Answer added")),
+        Err(e) => Err(e),
     }
 }

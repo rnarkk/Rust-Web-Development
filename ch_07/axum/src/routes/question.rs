@@ -1,66 +1,63 @@
-use std::collections::HashMap;
-
+use axum::extract::{Json, Query};
 use tracing::{event, instrument, Level};
-use warp::http::StatusCode;
 
-use crate::store::Store;
-use crate::types::pagination::{extract_pagination, Pagination};
-use crate::types::question::{NewQuestion, Question};
+use crate::{
+    store::Store,
+    types::{
+        pagination::Pagination,
+        question::{NewQuestion, Question}
+    }
+};
 
 #[instrument]
 pub async fn get_questions(
-    params: HashMap<String, String>,
-    store: Store,
-) -> Result<impl warp::Reply, warp::Rejection> {
+    State(store): State<Arc<Store>>,
+    params: Option<Query<Pagination>>
+) -> impl IntoResponse {
     event!(target: "practical_rust_book", Level::INFO, "querying questions");
-    let mut pagination = Pagination::default();
-
-    if !params.is_empty() {
-        event!(Level::INFO, pagination = true);
-        pagination = extract_pagination(params)?;
-    }
-
-    match store
-        .get_questions(pagination.limit, pagination.offset)
-        .await
-    {
-        Ok(res) => Ok(warp::reply::json(&res)),
-        Err(e) => Err(warp::reject::custom(e)),
+    let Pagination { limit, offset } = match params {
+        None => Pagination::default(),
+        Some(param) => {
+            event!(Level::INFO, pagination = true);
+            pagination = param.0;
+        }
+    };
+    match store.get_questions(limit, offset).await {
+        Ok(res) => Ok(Json(&res)),
+        Err(e) => Err(e),
     }
 }
 
 pub async fn update_question(
-    id: i32,
-    store: Store,
-    question: Question,
-) -> Result<impl warp::Reply, warp::Rejection> {
+    Path(id): Path<String>,
+    State(store): State<Arc<Store>>,
+    Json(question): Json<Question>
+) -> impl IntoResponse {
     match store.update_question(question, id).await {
-        Ok(res) => Ok(warp::reply::json(&res)),
-        Err(e) => Err(warp::reject::custom(e)),
+        Ok(res) => Ok(Json(&res)),
+        Err(e) => Err(e),
     }
 }
 
 pub async fn delete_question(
-    id: i32,
-    store: Store,
-) -> Result<impl warp::Reply, warp::Rejection> {
+    Path(id): Path<String>,
+    State(store): State<Arc<Store>>
+) -> impl IntoResponse {
     match store.delete_question(id).await {
-        Ok(_) => Ok(warp::reply::with_status(
-            format!("Question {} deleted", id),
+        Ok(_) => Ok((
             StatusCode::OK,
+            format!("Question {} deleted", id)
         )),
-        Err(e) => Err(warp::reject::custom(e)),
+        Err(e) => Err(e),
     }
 }
 
 pub async fn add_question(
-    store: Store,
-    new_question: NewQuestion,
-) -> Result<impl warp::Reply, warp::Rejection> {
+    State(store): State<Arc<Store>>,
+    Json(question): Json<Question>
+) -> impl IntoResponse {
     match store.add_question(new_question).await {
-        Ok(_) => {
-            Ok(warp::reply::with_status("Question added", StatusCode::OK))
-        }
-        Err(e) => Err(warp::reject::custom(e)),
+        Ok(_) => Ok((StatusCode::OK, "Question added")),
+        Err(e) => Err(e),
     }
 }
