@@ -9,5 +9,5 @@ pub struct Answer {
     pub question_id: QuestionId,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct AnswerId(pub String);

@@ -4,12 +4,12 @@ use reqwest_retry::{
 };
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct APIResponse {
     message: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct BadWord {
     original: String,
     word: String,
@@ -19,7 +19,7 @@ struct BadWord {
     replaced_len: i64,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct BadWordsResponse {
     content: String,
     bad_words_total: i64,

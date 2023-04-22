@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use tower_http::cors::{Any, CorsLayer};
 use tokio::sync::RwLock;
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct Question {
     id: QuestionId,
     title: String,
@@ -23,7 +23,7 @@ struct Question {
     tags: Option<Vec<String>>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 struct QuestionId(String);
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -33,7 +33,7 @@ struct Answer {
     question_id: QuestionId,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 struct AnswerId(String);
 
 #[derive(Debug)]

@@ -10,17 +10,17 @@ use warp::{
 
 use tokio::sync::RwLock;
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct Question {
     id: QuestionId,
     title: String,
     content: String,
     tags: Option<Vec<String>>,
 }
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 struct QuestionId(String);
 
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 struct AnswerId(String);
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

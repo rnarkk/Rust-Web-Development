@@ -15,5 +15,5 @@ pub struct Account {
     pub password: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct AccountId(pub i32);
