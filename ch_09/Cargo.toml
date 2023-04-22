@@ -21,5 +21,5 @@ reqwest-middleware = "0.2"
 reqwest-retry = "0.2"
 rand = "0.8"
 rust-argon2 = "1"
-paseto = "2"
+paseto = { version = "2", default-features = false, features = ["v2"]}
 chrono = "0.4"

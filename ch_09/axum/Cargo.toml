@@ -11,7 +11,7 @@ handle-errors = { package = "handle-errors-09-axum", path = "handle-errors" }
 http = "0.2"
 log = "0.4"
 log4rs = "1"
-paseto = "2"
+paseto = { version = "2", default-features = false, features = ["v2"]}
 rand = "0.8"
 rust-argon2 = "1"
 serde = { version = "1", features = ["derive"] }

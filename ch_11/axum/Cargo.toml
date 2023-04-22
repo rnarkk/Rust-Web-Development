@@ -11,7 +11,7 @@ axum = "0.6"
 clap = { version = "4", features = ["derive"] }
 chrono = "0.4"
 dotenv = "0.15"
-paseto = "2"
+paseto = { version = "2", default-features = false, features = ["v2"]}
 proc-macro2 = "1"
 rand = "0.8"
 reqwest = { version = "0.11", default-features = false, features = ["rustls-tls", "json"] }
