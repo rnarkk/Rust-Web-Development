@@ -18,7 +18,7 @@ use crate::{
 #[instrument]
 pub async fn get_questions(
     State(store): State<Arc<Store>>,
-    params: Option<Form<Pagination>>
+    params: Option<Query<Pagination>>
 ) -> impl IntoResponse {
     info!("querying questions");
     if let Some(params) = params {

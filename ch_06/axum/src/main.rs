@@ -41,20 +41,20 @@ async fn main() {
         .allow_headers([CONTENT_TYPE])
         .allow_methods([Method::PUT, Method::DELETE, Method::GET, Method::POST]);
 
-    let get_questions = warp::get()
-        .and(warp::path("questions"))
-        .and(warp::path::end())
-        .and(warp::query())
-        .and(store_filter.clone())
-        .and_then(routes::question::get_questions)
-        .with(warp::trace(|info| {
-            tracing::info_span!(
-                "get_questions request",
-                method = %info.method(),
-                path = %info.path(),
-                id = %uuid::Uuid::new_v4(),
-            )})
-        );
+    // let get_questions = warp::get()
+    //     .and(warp::path("questions"))
+    //     .and(warp::path::end())
+    //     .and(warp::query())
+    //     .and(store_filter.clone())
+    //     .and_then(routes::question::get_questions)
+    //     .with(warp::trace(|info| {
+    //         tracing::info_span!(
+    //             "get_questions request",
+    //             method = %info.method(),
+    //             path = %info.path(),
+    //             id = %uuid::Uuid::new_v4(),
+    //         )})
+    //     );
 
     let app = Router::new()
         .route("/questions", get(get_questions))
