@@ -1,0 +1,19 @@
+[package]
+name = "ch_07-axum"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.6"
+env_logger = "0.10"
+handle-errors = { package = "handle-errors-07-axum", path = "handle-errors" }
+http = "0.2"
+log = "0.4"
+log4rs = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sqlx = { version = "0.7.0-alpha.2", features = ["runtime-tokio", "tls-rustls", "migrate", "postgres"] }
+tokio = { version = "1", features = ["full"] }
+tracing = { version = "0.1", features = ["log"] }
+tracing-subscriber = "0.3"
+uuid = { version = "1", features = ["v4"] }

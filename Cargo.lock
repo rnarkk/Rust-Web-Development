@@ -355,6 +355,7 @@ name = "ch_03-axum"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "http",
  "serde",
  "tokio",
  "tower-http",
@@ -375,6 +376,7 @@ name = "ch_04-axum"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "http",
  "serde",
  "serde_json",
  "tokio",
@@ -429,6 +431,7 @@ dependencies = [
  "axum",
  "env_logger",
  "handle-errors-06-axum",
+ "http",
  "log",
  "log4rs",
  "serde",
@@ -455,6 +458,25 @@ dependencies = [
  "tracing-subscriber 0.3.16",
  "uuid",
  "warp",
+]
+
+[[package]]
+name = "ch_07-axum"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "env_logger",
+ "handle-errors-07-axum",
+ "http",
+ "log",
+ "log4rs",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "tracing-subscriber 0.3.16",
+ "uuid",
 ]
 
 [[package]]
@@ -1194,6 +1216,14 @@ version = "0.1.0"
 dependencies = [
  "tracing",
  "warp",
+]
+
+[[package]]
+name = "handle-errors-07-axum"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "tracing",
 ]
 
 [[package]]
