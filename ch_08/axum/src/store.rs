@@ -34,7 +34,7 @@ impl Store {
         limit: Option<u32>,
         offset: u32,
     ) -> Result<Vec<Question>, Error> {
-        match sqlx::query("SELECT * from questions LIMIT $1 OFFSET $2")
+        match sqlx::query("SELECT * FROM questions LIMIT $1 OFFSET $2")
             .bind(limit.map(|l| l as i32))
             .bind(offset as i32)
             .map(|row: PgRow| Question {
@@ -62,7 +62,7 @@ impl Store {
         match sqlx::query(
             "INSERT INTO questions (title, content, tags)
                  VALUES ($1, $2, $3)
-                 RETURNING id, title, content, tags",
+                 RETURNING id, title, content, tags"
         )
         .bind(title)
         .bind(content)

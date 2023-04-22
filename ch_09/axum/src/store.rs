@@ -17,29 +17,27 @@ pub struct Store {
 }
 
 impl Store {
-    pub async fn new(db_url: &str) -> Self {
-        let db_pool = match PgPoolOptions::new()
+    pub async fn new(url: &str) -> Self {
+        let pool = match PgPoolOptions::new()
             .max_connections(5)
-            .connect(db_url)
+            .connect(url)
             .await
         {
             Ok(pool) => pool,
             Err(e) => panic!("Couldn't establish DB connection: {}", e),
         };
 
-        Store {
-            connection: db_pool,
-        }
+        Store { connection: pool }
     }
 
     pub async fn get_questions(
         self,
-        limit: Option<i32>,
-        offset: i32,
+        limit: Option<u32>,
+        offset: u32,
     ) -> Result<Vec<Question>, Error> {
-        match sqlx::query("SELECT * from questions LIMIT $1 OFFSET $2")
-            .bind(limit)
-            .bind(offset)
+        match sqlx::query("SELECT * FROM questions LIMIT $1 OFFSET $2")
+            .bind(limit.map(|l| l as i32))
+            .bind(offset as i32)
             .map(|row: PgRow| Question {
                 id: QuestionId(row.get("id")),
                 title: row.get("title"),
@@ -63,7 +61,7 @@ impl Store {
         account_id: &AccountId,
     ) -> Result<bool, Error> {
         match sqlx::query(
-            "SELECT * from questions where id = $1 and account_id = $2",
+            "SELECT * FROM questions WHERE id = $1 and account_id = $2"
         )
         .bind(question_id)
         .bind(account_id.0)
@@ -80,13 +78,19 @@ impl Store {
 
     pub async fn add_question(
         self,
-        new_question: NewQuestion,
+        title: String,
+        content: String,
+        tags: Vec<String>,
         account_id: AccountId,
     ) -> Result<Question, Error> {
-        match sqlx::query("INSERT INTO questions (title, content, tags, account_id) VALUES ($1, $2, $3, $4) RETURNING id, title, content, tags")
-            .bind(new_question.title)
-            .bind(new_question.content)
-            .bind(new_question.tags)
+        match sqlx::query(
+            "INSERT INTO questions (title, content, tags, account_id)
+                 VALUES ($1, $2, $3, $4)
+                 RETURNING id, title, content, tags"
+            )
+            .bind(title)
+            .bind(content)
+            .bind(tags)
             .bind(account_id.0)
             .map(|row: PgRow| Question {
                 id: QuestionId(row.get("id")),
@@ -112,8 +116,8 @@ impl Store {
     ) -> Result<Question, Error> {
         match sqlx::query(
             "UPDATE questions SET title = $1, content = $2, tags = $3
-        WHERE id = $4 AND account_id = $5
-        RETURNING id, title, content, tags",
+            WHERE id = $4 AND account_id = $5
+            RETURNING id, title, content, tags",
         )
         .bind(question.title)
         .bind(question.content)
@@ -143,7 +147,7 @@ impl Store {
         account_id: AccountId,
     ) -> Result<bool, Error> {
         match sqlx::query(
-            "DELETE FROM questions WHERE id = $1 AND account_id = $2",
+            "DELETE FROM questions WHERE id = $1 AND account_id = $2"
         )
         .bind(id)
         .bind(account_id.0)
@@ -160,14 +164,15 @@ impl Store {
 
     pub async fn add_answer(
         self,
-        new_answer: NewAnswer,
+        question_id: QuestionId,
+        content: String,
         account_id: AccountId,
     ) -> Result<Answer, Error> {
         match sqlx::query(
             "INSERT INTO answers (content, corresponding_question, account_id) VALUES ($1, $2, $3)",
         )
-        .bind(new_answer.content)
-        .bind(new_answer.question_id.0)
+        .bind(content)
+        .bind(question_id.0)
         .bind(account_id.0)
         .map(|row: PgRow| Answer {
             id: AnswerId(row.get("id")),
@@ -198,13 +203,14 @@ impl Store {
 
     pub async fn add_account(
         self,
-        account: Account,
+        email: String,
+        password: String
     ) -> Result<bool, Error> {
         match sqlx::query(
             "INSERT INTO accounts (email, password) VALUES ($1, $2)",
         )
-        .bind(account.email)
-        .bind(account.password)
+        .bind(email)
+        .bind(password)
         .execute(&self.connection)
         .await
         {
@@ -236,7 +242,7 @@ impl Store {
         self,
         email: String,
     ) -> Result<Account, Error> {
-        match sqlx::query("SELECT * from accounts where email = $1")
+        match sqlx::query("SELECT * FROM accounts WHERE email = $1")
             .bind(email)
             .map(|row: PgRow| Account {
                 id: Some(AccountId(row.get("id"))),
