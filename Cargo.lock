@@ -512,7 +512,6 @@ dependencies = [
  "dotenv",
  "handle-errors-10",
  "paseto",
- "platforms",
  "proc-macro2",
  "rand",
  "reqwest",
@@ -538,7 +537,6 @@ dependencies = [
  "handle-errors-11",
  "mock-server",
  "paseto",
- "platforms",
  "proc-macro2",
  "rand",
  "reqwest",
@@ -552,33 +550,6 @@ dependencies = [
  "tracing",
  "tracing-subscriber 0.2.25",
  "warp",
-]
-
-[[package]]
-name = "ch_11-axum"
-version = "1.0.0"
-dependencies = [
- "axum",
- "chrono",
- "clap",
- "dotenv",
- "handle-errors-11-axum",
- "mock-server-11-axum",
- "paseto",
- "platforms",
- "proc-macro2",
- "rand",
- "reqwest",
- "reqwest-middleware",
- "reqwest-retry",
- "rust-argon2",
- "serde",
- "serde_json",
- "sqlx",
- "tokio",
- "tower-http",
- "tracing",
- "tracing-subscriber 0.2.25",
 ]
 
 [[package]]
@@ -1272,18 +1243,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "handle-errors-11-axum"
-version = "0.1.0"
-dependencies = [
- "axum",
- "reqwest",
- "reqwest-middleware",
- "rust-argon2",
- "sqlx",
- "tracing",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1796,16 +1755,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "mock-server-11-axum"
-version = "0.1.0"
-dependencies = [
- "axum",
- "bytes",
- "serde_json",
- "tokio",
-]
-
-[[package]]
 name = "multiparty"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2116,12 +2065,6 @@ name = "pkg-config"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ac9a59f73473f1b8d852421e59e64809f025994837ef743615c6d0c5b305160"
-
-[[package]]
-name = "platforms"
-version = "3.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3d7ddaed09e0eb771a79ab0fd64609ba0afb0a8366421957936ad14cbd13630"
 
 [[package]]
 name = "poly1305"

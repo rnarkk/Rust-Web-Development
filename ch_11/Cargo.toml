@@ -23,6 +23,3 @@ chrono = "0.4"
 dotenv = "0.15"
 clap = { version = "4", features = ["derive"] }
 proc-macro2 = "1"
-
-[build-dependencies]
-platforms = "3"

@@ -1,4 +1,3 @@
-use platforms::*;
 use std::{borrow::Cow, process::Command};
 
 /// Generate the `cargo:` key output
