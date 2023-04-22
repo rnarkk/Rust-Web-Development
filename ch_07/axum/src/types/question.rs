@@ -5,7 +5,7 @@ pub struct Question {
     pub id: QuestionId,
     pub title: String,
     pub content: String,
-    pub tags: Option<Vec<String>>,
+    pub tags: Vec<String>,
 }
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct QuestionId(pub i32);
@@ -14,5 +14,5 @@ pub struct QuestionId(pub i32);
 pub struct NewQuestion {
     pub title: String,
     pub content: String,
-    pub tags: Option<Vec<String>>,
+    pub tags: Vec<String>,
 }

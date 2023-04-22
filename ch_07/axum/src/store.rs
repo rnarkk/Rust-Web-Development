@@ -16,17 +16,17 @@ pub struct Store {
 }
 
 impl Store {
-    pub async fn new(db_url: &str) -> Self {
-        let db_pool = match PgPoolOptions::new()
+    pub async fn new(url: &str) -> Self {
+        let pool = match PgPoolOptions::new()
             .max_connections(5)
-            .connect(db_url)
+            .connect(url)
             .await
         {
             Ok(pool) => pool,
             Err(e) => panic!("Couldn't establish DB connection: {}", e),
         };
 
-        Store { connection: db_pool }
+        Store { connection: pool }
     }
 
     pub async fn get_questions(
@@ -56,16 +56,18 @@ impl Store {
 
     pub async fn add_question(
         &self,
-        new_question: NewQuestion,
+        title: String,
+        content: String,
+        tags: Vec<String>
     ) -> Result<Question, Error> {
         match sqlx::query(
             "INSERT INTO questions (title, content, tags)
                  VALUES ($1, $2, $3)
                  RETURNING id, title, content, tags",
         )
-        .bind(new_question.title)
-        .bind(new_question.content)
-        .bind(new_question.tags)
+        .bind(title)
+        .bind(content)
+        .bind(tags)
         .map(|row: PgRow| Question {
             id: QuestionId(row.get("id")),
             title: row.get("title"),
