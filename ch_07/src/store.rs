@@ -73,8 +73,7 @@ impl Store {
             tags: row.get("tags"),
         })
         .fetch_one(&self.connection)
-        .await
-        {
+        .await {
             Ok(question) => Ok(question),
             Err(e) => {
                 tracing::event!(tracing::Level::ERROR, "{:?}", e);
@@ -90,8 +89,8 @@ impl Store {
     ) -> Result<Question, Error> {
         match sqlx::query(
             "UPDATE questions SET title = $1, content = $2, tags = $3
-        WHERE id = $4
-        RETURNING id, title, content, tags",
+            WHERE id = $4
+            RETURNING id, title, content, tags",
         )
         .bind(question.title)
         .bind(question.content)
@@ -114,12 +113,9 @@ impl Store {
         }
     }
 
-    pub async fn delete_question(
-        &self,
-        question_id: i32,
-    ) -> Result<bool, Error> {
+    pub async fn delete_question(&self, id: i32) -> Result<bool, Error> {
         match sqlx::query("DELETE FROM questions WHERE id = $1")
-            .bind(question_id)
+            .bind(id)
             .execute(&self.connection)
             .await
         {
