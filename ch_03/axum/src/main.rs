@@ -8,6 +8,7 @@ use axum::{
     response::Json,
     routing::get
 };
+use http::{Method, header::CONTENT_TYPE};
 use serde::Serialize;
 use tower_http::cors::{Any, CorsLayer};
 
