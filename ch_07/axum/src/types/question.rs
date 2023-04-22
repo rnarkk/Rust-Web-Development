@@ -7,6 +7,7 @@ pub struct Question {
     pub content: String,
     pub tags: Vec<String>,
 }
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub struct QuestionId(pub i32);
 
