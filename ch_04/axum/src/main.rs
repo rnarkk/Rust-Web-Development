@@ -81,25 +81,13 @@ impl Display for Error {
 
 async fn handle_error(r: Rejection) -> impl IntoResponse {
     if let Some(error) = r.find::<Error>() {
-        Ok(warp::reply::with_status(
-            error.to_owned(),
-            StatusCode::RANGE_NOT_SATISFIABLE,
-        ))
+        (StatusCode::RANGE_NOT_SATISFIABLE, error.to_owned())
     } else if let Some(error) = r.find::<CorsForbidden>() {
-        Ok(warp::reply::with_status(
-            error.to_owned(),
-            StatusCode::FORBIDDEN,
-        ))
+        (StatusCode::FORBIDDEN, error.to_owned())
     } else if let Some(error) = r.find::<BodyDeserializeError>() {
-        Ok(warp::reply::with_status(
-            error.to_owned(),
-            StatusCode::UNPROCESSABLE_ENTITY,
-        ))
+        (StatusCode::UNPROCESSABLE_ENTITY, error.to_owned())
     } else {
-        Ok(warp::reply::with_status(
-            "Route not found".to_owned(),
-            StatusCode::NOT_FOUND,
-        ))
+        (StatusCode::NOT_FOUND, "Route not found".to_owned())
     }
 }
 
@@ -110,10 +98,10 @@ async fn get_questions(
     if let Some(pagination) = pagination.0 {
         let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
         let res = res[pagination.start..pagination.end];
-        Ok(Json(res))
+        Json(res)
     } else {
         let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
-        Ok(Json(res))
+        Json(res)
     }
 }
 
@@ -121,11 +109,7 @@ async fn add_question(
     State(store): State<Arc<Store>>,
     Json(question): Json<Question>,
 ) -> impl IntoResponse {
-    store
-        .questions
-        .write()
-        .await
-        .insert(question.id.clone(), question);
+    store.questions.write().await.insert(question.id.clone(), question);
     (StatusCode::OK, "Question added".to_owned())
 }
 
@@ -137,10 +121,10 @@ async fn update_question(
     match store.questions.write().await.get_mut(&QuestionId(id)) {
         Some(q) => *q = question,
         None => return (
-            Error::QuestionNotFound)
+            Error::QuestionNotFound
         )
     }
-    Ok((StatusCode::OK, "Question updated"))
+    (StatusCode::OK, "Question updated")
 }
 
 async fn delete_question(
@@ -148,8 +132,8 @@ async fn delete_question(
     State(store): State<Arc<Store>>
 ) -> impl IntoResponse {
     match store.questions.write().await.remove(&QuestionId(id)) {
-        Some(_) => return Ok((StatusCode::OK, "Question deleted")),
-        None => return Err(Error::QuestionNotFound),
+        Some(_) => (StatusCode::OK, "Question deleted"),
+        None => (Error::QuestionNotFound),
     }
 }
 
@@ -168,11 +152,7 @@ async fn add_answer(
         content: params.content,
         question_id: QuestionId(params.question_id),
     };
-    store
-        .answers
-        .write()
-        .await
-        .insert(answer.id.clone(), answer);
+    store.answers.write().await.insert(answer.id.clone(), answer);
    (StatusCode::OK, "Answer added")
 }
 
