@@ -10,12 +10,15 @@ use axum::{
     routing::{get, post, put}
 };
 use http::{Method, header::CONTENT_TYPE};
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::TraceLayer
+};
 use tracing_subscriber::fmt::format::FmtSpan;
 
 use routes::{
-    question::{get_questions, update_question, delete_question, add_question},
-    answer::add_answer
+    answer::add_answer,
+    question::{get_questions, update_question, delete_question, add_question}
 };
 use store::Store;
 
@@ -53,15 +56,14 @@ async fn main() {
             )})
         );
 
-    let routes = get_questions
-        .or(update_question)
-        .or(add_question)
-        .or(add_answer)
-        .or(delete_question)
-        .with(cors)
-        .with(warp::trace::request())
-        .recover(return_error);
-
+    let app = Router::new()
+        .route("/questions", get(get_questions))
+        .route("/questions/:id",
+               put(update_question).delete(delete_question).post(add_question))
+        .route("/comments", post(add_answer))
+        .with_state(store)
+        .layer(cors)
+        .layer(TraceLayer::new_for_http());
     Server::bind(&"127.0.0.1:3030".parse().unwrap())
         .serve(app.into_make_service())
         .await

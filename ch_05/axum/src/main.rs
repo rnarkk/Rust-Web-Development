@@ -13,8 +13,8 @@ use http::{Method, header::CONTENT_TYPE};
 use tower_http::cors::{Any, CorsLayer};
 
 use routes::{
-    question::{get_questions, update_question, delete_question, add_question},
-    answer::add_answer
+    answer::add_answer,
+    question::{get_questions, update_question, delete_question, add_question}
 };
 use store::Store;
 
@@ -27,7 +27,8 @@ async fn main() {
         .allow_methods([Method::PUT, Method::DELETE, Method::GET, Method::POST]);
     let app = Router::new()
         .route("/questions", get(get_questions))
-        .route("/questions/:id", put(update_question).delete(delete_question).post(add_question))
+        .route("/questions/:id",
+               put(update_question).delete(delete_question).post(add_question))
         .route("/comments", post(add_answer))
         .with_state(store)
         .layer(cors);
