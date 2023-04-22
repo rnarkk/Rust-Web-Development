@@ -2,7 +2,7 @@ use std::fmt::Display;
 use axum::{
     BoxError,
     http::StatusCode,
-    response::IntoResponse
+    response::{IntoResponse, Response}
 };
 use tracing::{event, Level, instrument};
 
@@ -23,20 +23,28 @@ impl Display for Error {
     }
 }
 
+impl std::error::Error for Error {}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> Response {
+        let body = format!("{}", self);
+        (StatusCode::UNPROCESSABLE_ENTITY, body).into_response()
+    }
+}
+
 #[instrument]
-pub async fn return_error(r: BoxError) -> impl IntoResponse {
-    if let Some(crate::Error::DatabaseQueryError) = r.is() {
-        event!(Level::ERROR, "Database query error");
-        (StatusCode::UNPROCESSABLE_ENTITY, crate::Error::DatabaseQueryError.to_string())
-    } else if let Some(error) = r.is::<CorsForbidden>() {
-        event!(Level::ERROR, "CORS forbidden error: {}", error);
-        (StatusCode::FORBIDDEN, error.to_string())
-    } else if let Some(error) = r.is::<BodyDeserializeError>() {
-        event!(Level::ERROR, "Cannot deserizalize request body: {}", error);
-        (StatusCode::UNPROCESSABLE_ENTITY, error.to_string())
-    } else if let Some(error) = r.is::<Error>() {
-        event!(Level::ERROR, "{}", error);
-        (StatusCode::UNPROCESSABLE_ENTITY, error.to_string())
+pub async fn handle_error(err: BoxError) -> impl IntoResponse {
+    if err.is::<Error>() {
+        match err.as_ref().downcast_ref::<Error>().unwrap() {
+            Error::DatabaseQueryError => {
+                event!(Level::ERROR, "Database query error");
+                (StatusCode::UNPROCESSABLE_ENTITY, Error::DatabaseQueryError.to_string())
+            }
+            err => {
+                event!(Level::ERROR, "{}", err);
+                (StatusCode::UNPROCESSABLE_ENTITY, err.to_string())
+            }
+        }
     } else {
         event!(Level::WARN, "Requested route was not found");
         (StatusCode::NOT_FOUND, "Route not found".to_owned())
