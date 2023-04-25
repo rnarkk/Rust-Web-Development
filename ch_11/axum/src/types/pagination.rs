@@ -1,8 +1,9 @@
+use serde::{Deserialize, Serialize};
 use handle_errors::Error;
 
 /// Pagination struct which is getting extract
 /// from query params
-#[derive(Default, Debug, PartialEq)]
+#[derive(Default, Debug, PartialEq, Deserialize, Serialize)]
 pub struct Pagination {
     /// The index of the last item which has to be returned
     pub limit: Option<u32>,
