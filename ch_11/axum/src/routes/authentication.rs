@@ -4,7 +4,7 @@ use axum::{
     extract::State,
     response::{IntoResponse, Json},
 };
-use chrono::prelude::*;
+use chrono::{Duration, Utc};
 use rand::Rng;
 
 use crate::store::Store;
@@ -34,9 +34,7 @@ pub async fn login(State(store): State<Arc<Store>>, Json(login): Json<Account>)
         Ok(account) => match verify_password(&account.password, login.password.as_bytes()) {
             Ok(verified) => {
                 if verified {
-                    Ok(warp::reply::json(&issue_token(
-                        account.id.expect("id not found"),
-                    )))
+                    Ok(Json(&issue_token(account.id.expect("id not found"))))
                 } else {
                     Err(handle_errors::Error::WrongPassword)
                 }
@@ -73,7 +71,7 @@ fn issue_token(account_id: AccountId) -> String {
     let key = env::var("PASETO_KEY").unwrap();
 
     let current_date_time = Utc::now();
-    let dt = current_date_time + chrono::Duration::days(1);
+    let dt = current_date_time + Duration::days(1);
 
     paseto::tokens::PasetoBuilder::new()
         .set_encryption_key(&Vec::from(key.as_bytes()))
@@ -88,9 +86,7 @@ pub fn auth() -> impl Filter<Extract = (Session,), Error = warp::Rejection> + Cl
         let token = match verify_token(token) {
             Ok(t) => t,
             Err(_) => {
-                return future::ready(Err(warp::reject::custom(
-                    handle_errors::Error::Unauthorized,
-                )))
+                return future::ready(Err(handle_errors::Error::Unauthorized))
             }
         };
 
